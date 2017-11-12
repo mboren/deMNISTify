@@ -13,6 +13,10 @@ import Svg.Events exposing (onMouseMove)
 pxSize =
     10
 
+controlHeight =
+    10
+
+
 
 main : Program Never Model Msg
 main =
@@ -49,6 +53,7 @@ type Msg
     = MouseOverCell Int Int
     | StartDrawing
     | StopDrawing
+    | Clear
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -70,6 +75,16 @@ update msg model =
         StopDrawing ->
             ( { model | drawing = False }, Cmd.none )
 
+        Clear ->
+            let
+                ( cols, rows ) =
+                    model.image.size
+
+                newImage =
+                    Matrix.repeat cols rows 0
+            in
+            ( { model | image = newImage }, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
@@ -78,7 +93,7 @@ view model =
             pxSize * Matrix.width model.image
 
         vbHeight =
-            pxSize * Matrix.height model.image
+            controlHeight + pxSize * Matrix.height model.image
     in
     div
         []
@@ -94,10 +109,21 @@ view model =
                 , ( "max-height", "100%" )
                 ]
             ]
-            (Matrix.toIndexedArray model.image
-                |> Array.toList
-                |> List.map (\( ( col, row ), val ) -> drawCell col row val)
-            )
+            [ Svg.g []
+                (Matrix.toIndexedArray model.image
+                    |> Array.toList
+                    |> List.map (\( ( col, row ), val ) -> drawCell col row val)
+                )
+            , Svg.rect
+                [ Svg.Attributes.width (toString vbWidth)
+                , Svg.Attributes.height (toString controlHeight)
+                , Svg.Attributes.x (toString 0)
+                , Svg.Attributes.y (toString (vbHeight - controlHeight))
+                , Svg.Attributes.fill "gray"
+                , Svg.Events.onClick Clear
+                ]
+                []
+            ]
         ]
 
 
