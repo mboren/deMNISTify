@@ -4,8 +4,10 @@ import Array exposing (Array)
 import Html exposing (Html, div, text)
 import Html.Attributes
 import Matrix exposing (Matrix)
+import Mouse
 import Svg exposing (Svg)
 import Svg.Attributes
+import Svg.Events exposing (onMouseMove)
 
 
 pxSize =
@@ -24,32 +26,49 @@ main =
 
 type alias Model =
     { image : Matrix Float
+    , drawing : Bool
     }
 
 
 init : ( Model, Cmd Msg )
 init =
     let
-        model =
+        image =
             Matrix.fromList
-                [ [ 1, 0, 1, 0 ]
-                , [ 1, 0, 1, 0 ]
-                , [ 1, 0, 1, 0 ]
-                , [ 1, 0, 1, 0 ]
+                [ [ 0, 0, 0, 0 ]
+                , [ 0, 0, 0, 0 ]
+                , [ 0, 0, 0, 0 ]
+                , [ 0, 0, 0, 0 ]
                 ]
                 |> Maybe.withDefault Matrix.empty
-                |> Model
     in
-    ( model, Cmd.none )
+    ( Model image False, Cmd.none )
 
 
 type Msg
-    = NoOp
+    = MouseOverCell Int Int
+    | StartDrawing
+    | StopDrawing
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        MouseOverCell col row ->
+            if model.drawing then
+                let
+                    newImage =
+                        Matrix.set col row 1.0 model.image
+                in
+                ( { model | image = newImage }, Cmd.none )
+            else
+                ( model, Cmd.none )
+
+        StartDrawing ->
+            ( { model | drawing = True }, Cmd.none )
+
+        StopDrawing ->
+            ( { model | drawing = False }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -103,10 +122,14 @@ drawCell col row value =
         , Svg.Attributes.x (toString x)
         , Svg.Attributes.y (toString y)
         , Svg.Attributes.fill fill
+        , onMouseMove (MouseOverCell col row)
         ]
         []
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ Mouse.downs (\_ -> StartDrawing)
+        , Mouse.ups (\_ -> StopDrawing)
+        ]
