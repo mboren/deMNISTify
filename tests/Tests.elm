@@ -4,6 +4,7 @@ import Array exposing (Array)
 import Expect exposing (Expectation)
 import Matrix
 import MatrixMath
+import NeuralNet exposing (ActivationFunc(..))
 import Test exposing (..)
 
 
@@ -130,8 +131,77 @@ matrixMathTests =
         ]
 
 
+neuralNetTests =
+    describe "NeuralNet tests"
+        [ describe "initialize"
+            [ test "empty layers list should result in empty weights and biases" <|
+                \_ ->
+                    Expect.equal (NeuralNet.initialize [] 0 Identity) { biases = [], weights = [], activation = Identity }
+            , test "basic example" <|
+                \_ ->
+                    let
+                        weightMatrixSizes =
+                            [ ( 2, 3 ), ( 3, 2 ) ]
+
+                        weights =
+                            weightMatrixSizes
+                                |> List.map (\( c, r ) -> Matrix.repeat c r 0)
+                    in
+                    Expect.equal (NeuralNet.initialize [ 2, 3, 2 ] 0 Identity) { biases = [ Array.repeat 3 0, Array.repeat 2 0 ], weights = weights, activation = Identity }
+            ]
+        , describe "weightMatrixSizeHelper"
+            [ test "empty inputs should result in empty list" <|
+                \_ ->
+                    Expect.equal (NeuralNet.weightMatrixSizeHelper [] []) []
+            , test "basic example" <|
+                \_ ->
+                    Expect.equal (NeuralNet.weightMatrixSizeHelper [ 4, 3, 2 ] []) [ ( 4, 3 ), ( 3, 2 ) ]
+            ]
+        , describe "feedforward"
+            [ test "if input doesn't match first layer size, should return Nothing" <|
+                \_ ->
+                    let
+                        net =
+                            { biases = [ Array.repeat 3 1, Array.repeat 2 1 ]
+                            , weights =
+                                [ ( 2, 3 ), ( 3, 2 ) ]
+                                    |> List.map (\( c, r ) -> Matrix.repeat c r 1)
+                            , activation = Identity
+                            }
+                    in
+                    Expect.equal (NeuralNet.predict net (Array.fromList [ 1, 1, 1 ])) Nothing
+            , test "input matching first layer size should return something" <|
+                \_ ->
+                    let
+                        net =
+                            { biases = [ Array.repeat 3 1, Array.repeat 2 1 ]
+                            , weights =
+                                [ ( 2, 3 ), ( 3, 2 ) ]
+                                    |> List.map (\( c, r ) -> Matrix.repeat c r 1)
+                            , activation = Identity
+                            }
+                    in
+                    Expect.equal (NeuralNet.predict net (Array.fromList [ 1, 1 ])) (Just (Array.repeat 2 10))
+            , test "net with mismatched weights and biases should return Nothing" <|
+                \_ ->
+                    let
+                        net =
+                            { biases = [ Array.repeat 2 1, Array.repeat 2 1 ]
+                            , weights =
+                                [ ( 2, 3 ), ( 3, 2 ) ]
+                                    |> List.map (\( c, r ) -> Matrix.repeat c r 1)
+                            , activation = Identity
+                            }
+                    in
+                    Expect.equal (NeuralNet.predict net (Array.fromList [ 1, 1 ])) Nothing
+            ]
+        ]
+
+
+
 suite : Test
 suite =
     describe "all tests"
         [ matrixMathTests
+        , neuralNetTests
         ]
