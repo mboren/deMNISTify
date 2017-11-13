@@ -56,8 +56,25 @@ update msg model =
         MouseOverCell col row ->
             if model.drawing then
                 let
+                    neighbors =
+                        Matrix.Extra.indexedNeighbours col row model.image
+
+                    -- Add a bit to each neighbor, which results in lighter edges
+                    -- around each line. This more closely resembles the original
+                    -- MNIST data than solid colors.
+                    colorNeighbors : Matrix Float -> List ( ( Int, Int ), Float ) -> Matrix Float
+                    colorNeighbors image neighbors =
+                        case neighbors of
+                            [] ->
+                                image
+
+                            ( ( col, row ), value ) :: tail ->
+                                colorNeighbors (Matrix.set col row (min 1 (value + 0.4)) image) tail
+
                     newImage =
-                        Matrix.set col row 1.0 model.image
+                        colorNeighbors model.image neighbors
+                            |> Matrix.set col row 1.0
+
                 in
                 ( { model | image = newImage }, Cmd.none )
             else
