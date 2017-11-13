@@ -31,6 +31,7 @@ main =
 type alias Model =
     { image : Matrix Float
     , drawing : Bool
+    , previousDrawn : Maybe ( Int, Int )
     }
 
 
@@ -40,7 +41,7 @@ init =
         image =
             Matrix.repeat 28 28 0
     in
-    ( Model image False, Cmd.none )
+    ( Model image False Nothing, Cmd.none )
 
 
 type Msg
@@ -54,7 +55,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         MouseOverCell col row ->
-            if model.drawing then
+            if model.drawing && Just ( col, row ) /= model.previousDrawn then
                 let
                     neighbors =
                         Matrix.Extra.indexedNeighbours col row model.image
@@ -76,7 +77,7 @@ update msg model =
                             |> Matrix.set col row 1.0
 
                 in
-                ( { model | image = newImage }, Cmd.none )
+                ( { model | image = newImage, previousDrawn = Just ( col, row ) }, Cmd.none )
             else
                 ( model, Cmd.none )
 
