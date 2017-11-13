@@ -130,11 +130,11 @@ drawCell col row value =
         y =
             row * pxSize
 
+        intensity =
+            toString (clamp 0 255 (value * 255))
+
         fill =
-            if value == 0.0 then
-                "white"
-            else
-                "black"
+            "rgb(" ++ intensity ++ ", " ++ intensity ++ ", " ++ intensity ++ ")"
     in
     Svg.rect
         [ Svg.Attributes.width (toString pxSize)
