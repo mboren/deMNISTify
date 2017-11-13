@@ -38,13 +38,7 @@ init : ( Model, Cmd Msg )
 init =
     let
         image =
-            Matrix.fromList
-                [ [ 0, 0, 0, 0 ]
-                , [ 0, 0, 0, 0 ]
-                , [ 0, 0, 0, 0 ]
-                , [ 0, 0, 0, 0 ]
-                ]
-                |> Maybe.withDefault Matrix.empty
+            Matrix.repeat 28 28 0
     in
     ( Model image False, Cmd.none )
 
