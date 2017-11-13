@@ -13,9 +13,9 @@ import Svg.Events exposing (onMouseMove)
 pxSize =
     10
 
+
 controlHeight =
     10
-
 
 
 main : Program Never Model Msg
@@ -75,7 +75,6 @@ update msg model =
                     newImage =
                         colorNeighbors model.image neighbors
                             |> Matrix.set col row 1.0
-
                 in
                 ( { model | image = newImage, previousDrawn = Just ( col, row ) }, Cmd.none )
             else
