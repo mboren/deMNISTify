@@ -15,7 +15,7 @@ pxSize =
 
 
 controlHeight =
-    10
+    15
 
 
 main : Program Never Model Msg
@@ -32,6 +32,7 @@ type alias Model =
     { image : Matrix Float
     , drawing : Bool
     , previousDrawn : Maybe ( Int, Int )
+    , predicted : Maybe Int
     }
 
 
@@ -41,7 +42,7 @@ init =
         image =
             Matrix.repeat 28 28 0
     in
-    ( Model image False Nothing, Cmd.none )
+    ( Model image False Nothing Nothing, Cmd.none )
 
 
 type Msg
@@ -75,8 +76,17 @@ update msg model =
                     newImage =
                         colorNeighbors model.image neighbors
                             |> Matrix.set col row 1.0
+
+                    newPredicted =
+                        recognizeDigit model.image
                 in
-                ( { model | image = newImage, previousDrawn = Just ( col, row ) }, Cmd.none )
+                ( { model
+                    | image = newImage
+                    , predicted = newPredicted
+                    , previousDrawn = Just ( col, row )
+                  }
+                , Cmd.none
+                )
             else
                 ( model, Cmd.none )
 
@@ -95,6 +105,27 @@ update msg model =
                     Matrix.repeat cols rows 0
             in
             ( { model | image = newImage }, Cmd.none )
+
+
+recognizeDigit : Matrix Float -> Maybe Int
+recognizeDigit image =
+    let
+        totalWeight =
+            Matrix.toIndexedArray image
+                |> Array.toList
+                |> List.map Tuple.second
+                |> List.sum
+
+        digitsSortedByWeight =
+            Array.fromList [ 1, 7, 4, 3, 9, 5, 2, 6, 8, 0 ]
+
+        index x =
+            0.0004 * x * x - 0.0387 * x + 0.713
+
+        digitIndex =
+            totalWeight |> index |> round
+    in
+    Array.get digitIndex digitsSortedByWeight
 
 
 view : Model -> Html Msg
@@ -134,6 +165,16 @@ view model =
                 , Svg.Events.onClick Clear
                 ]
                 []
+            , Svg.text_
+                [ Svg.Attributes.x (toString (vbWidth - 10))
+                , Svg.Attributes.y (toString (vbHeight - 2))
+                , Svg.Attributes.fill "white"
+                ]
+                [ Svg.text
+                    (Maybe.map toString model.predicted
+                        |> Maybe.withDefault "?"
+                    )
+                ]
             ]
         ]
 
