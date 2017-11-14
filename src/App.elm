@@ -4,6 +4,7 @@ import Array exposing (Array)
 import Html exposing (Html, div, text)
 import Html.Attributes
 import Matrix exposing (Matrix, loc)
+import MatrixMath
 import Mouse
 import Svg exposing (Svg)
 import Svg.Attributes
@@ -99,7 +100,7 @@ update msg model =
                     | image = newImage
                     , previousDrawn = Just ( col, row )
                   }
-                , sendImage (Matrix.flatten newImage)
+                , sendImage (Matrix.flatten (MatrixMath.center newImage))
                 )
             else
                 ( model, Cmd.none )

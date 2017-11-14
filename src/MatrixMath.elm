@@ -106,3 +106,54 @@ centerOfMass image =
                     |> Tuple.mapSecond List.sum
         in
         ( rowWeight / totalWeight, colWeight / totalWeight )
+
+
+shift : Matrix Float -> Float -> Float -> Matrix Float
+shift image dr dc =
+    let
+        f ( r, c ) v =
+            let
+                ( drFrac, dcFrac ) =
+                    ( dr - toFloat (floor dr), dc - toFloat (floor dc) )
+
+                aDist =
+                    sqrt (dcFrac * dcFrac + drFrac * drFrac)
+
+                bDist =
+                    sqrt ((1 - dcFrac) * (1 - dcFrac) + (1 - drFrac) * (1 - drFrac))
+
+                totalDist =
+                    aDist + bDist
+
+                aWeight =
+                    aDist / totalDist
+
+                bWeight =
+                    bDist / totalDist
+
+                a =
+                    Matrix.get (Matrix.loc (r - floor dr) (c - floor dc)) image
+                        |> Maybe.withDefault 0.0
+
+                b =
+                    Matrix.get (Matrix.loc (r - ceiling dr) (c - ceiling dc)) image
+                        |> Maybe.withDefault 0.0
+            in
+            a * aWeight + b * bWeight
+    in
+    Matrix.mapWithLocation f image
+
+
+center : Matrix Float -> Matrix Float
+center image =
+    let
+        ( cmCol, cmRow ) =
+            centerOfMass image
+
+        ( cRow, cCol ) =
+            ( toFloat (Matrix.rowCount image) / 2, toFloat (Matrix.colCount image) / 2 )
+
+        ( dr, dc ) =
+            ( cRow - cmRow, cCol - cmCol )
+    in
+    shift image dr dc
