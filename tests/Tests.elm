@@ -182,12 +182,3 @@ neuralNetTests =
                     Expect.equal (NeuralNet.predict net (Array.fromList [ 1, 1 ])) Nothing
             ]
         ]
-
-
-
-suite : Test
-suite =
-    describe "all tests"
-        [ matrixMathTests
-        , neuralNetTests
-        ]
