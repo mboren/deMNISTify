@@ -220,6 +220,7 @@ drawCell setMouseEvent row col value =
         )
         []
 
+
 drawImage : Bool -> Matrix Float -> Svg Msg
 drawImage setMouseEvent image =
     image
