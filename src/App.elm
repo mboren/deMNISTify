@@ -186,7 +186,7 @@ view model =
                     |> Array.toIndexedList
                     |> List.map (\( r, list ) -> List.map (\( c, v ) -> ( r, c, v )) list)
                     |> List.concat
-                    |> List.map (\( row, col, val ) -> drawCell row col val)
+                    |> List.map (\( row, col, val ) -> drawCell model.drawing row col val)
                 )
             , Svg.rect
                 [ Svg.Attributes.width (toString vbWidth)
@@ -211,8 +211,8 @@ view model =
         ]
 
 
-drawCell : Int -> Int -> Float -> Svg Msg
-drawCell row col value =
+drawCell : Bool -> Int -> Int -> Float -> Svg Msg
+drawCell setMouseEvent row col value =
     let
         x =
             col * pxSize
@@ -227,13 +227,18 @@ drawCell row col value =
             "rgb(" ++ intensity ++ ", " ++ intensity ++ ", " ++ intensity ++ ")"
     in
     Svg.rect
-        [ Svg.Attributes.width (toString pxSize)
-        , Svg.Attributes.height (toString pxSize)
-        , Svg.Attributes.x (toString x)
-        , Svg.Attributes.y (toString y)
-        , Svg.Attributes.fill fill
-        , onMouseMove (MouseOverCell col row)
-        ]
+        ([ Svg.Attributes.width (toString pxSize)
+         , Svg.Attributes.height (toString pxSize)
+         , Svg.Attributes.x (toString x)
+         , Svg.Attributes.y (toString y)
+         , Svg.Attributes.fill fill
+         ]
+            ++ (if setMouseEvent then
+                    [ onMouseMove (MouseOverCell col row) ]
+                else
+                    []
+               )
+        )
         []
 
 
