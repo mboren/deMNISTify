@@ -67,3 +67,42 @@ This is a handy thing for mapping over.
 getRows : Matrix a -> List (Array a)
 getRows matrix =
     Array.toList matrix
+
+
+{-| Get center of mass of a matrix. This is used for centering
+the image before it is classified.
+-}
+centerOfMass : Matrix Float -> ( Float, Float )
+centerOfMass image =
+    if 0 == Matrix.rowCount image then
+        ( 0, 0 )
+    else
+        let
+            weights ( ( row, col ), value ) =
+                let
+                    rowW =
+                        toFloat row * value
+
+                    colW =
+                        toFloat col * value
+                in
+                ( rowW, colW )
+
+            nonZeroCells =
+                Matrix.mapWithLocation (,) image
+                    |> Matrix.flatten
+                    |> List.filter (\( _, v ) -> v > 0.0)
+
+            totalWeight =
+                nonZeroCells
+                    |> List.map Tuple.second
+                    |> List.sum
+
+            ( rowWeight, colWeight ) =
+                nonZeroCells
+                    |> List.map weights
+                    |> List.unzip
+                    |> Tuple.mapFirst List.sum
+                    |> Tuple.mapSecond List.sum
+        in
+        ( rowWeight / totalWeight, colWeight / totalWeight )

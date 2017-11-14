@@ -114,6 +114,44 @@ matrixMathTests =
                 \_ ->
                     Expect.equal (MatrixMath.getRows (Matrix.fromList [ [ 1, 1, 1 ], [ 1, 1, 1 ] ])) [ Array.fromList [ 1, 1, 1 ], Array.fromList [ 1, 1, 1 ] ]
             ]
+        , describe "centerOfMass"
+            [ test "empty matrix should return 0,0" <|
+                \_ ->
+                    Expect.equal (MatrixMath.centerOfMass (Matrix.fromList [])) ( 0, 0 )
+            , test "CM of uniform even-sized matrix should be middle" <|
+                \_ ->
+                    let
+                        mat =
+                            Matrix.matrix 4 4 (\_ -> 1)
+                    in
+                    Expect.equal (MatrixMath.centerOfMass mat) ( 1.5, 1.5 )
+            , test "CM of uniform odd-sized matrix should be middle" <|
+                \_ ->
+                    let
+                        mat =
+                            Matrix.matrix 3 3 (\_ -> 1)
+                    in
+                    Expect.equal (MatrixMath.centerOfMass mat) ( 1, 1 )
+            , test "CM of matrix with single cell should be that cell" <|
+                \_ ->
+                    let
+                        mat =
+                            Matrix.matrix 3 3 (\_ -> 0)
+                                |> Matrix.set (Matrix.loc 2 2) 1
+                    in
+                    Expect.equal (MatrixMath.centerOfMass mat) ( 2, 2 )
+            , test "CM of x shape should be middle" <|
+                \_ ->
+                    let
+                        mat =
+                            Matrix.fromList
+                                [ [ 3, 0, 3 ]
+                                , [ 0, 0, 0 ]
+                                , [ 3, 0, 3 ]
+                                ]
+                    in
+                    Expect.equal (MatrixMath.centerOfMass mat) ( 1, 1 )
+            ]
         ]
 
 
