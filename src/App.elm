@@ -58,20 +58,27 @@ update msg model =
         MouseOverCell col row ->
             if model.drawing && Just ( col, row ) /= model.previousDrawn then
                 let
+                    delta =
+                        List.range -1 1
+
                     neighbors =
-                        []
+                        delta
+                            |> List.concatMap (\i -> List.map ((,) i) delta)
+                            |> List.filter ((/=) ( 0, 0 ))
+                            |> List.map (\( dr, dc ) -> ( dr + row, dc + col ))
+                            |> List.map (\( r, c ) -> loc r c)
 
                     -- Add a bit to each neighbor, which results in lighter edges
                     -- around each line. This more closely resembles the original
                     -- MNIST data than solid colors.
-                    colorNeighbors : Matrix Float -> List ( ( Int, Int ), Float ) -> Matrix Float
+                    colorNeighbors : Matrix Float -> List Matrix.Location -> Matrix Float
                     colorNeighbors image neighbors =
                         case neighbors of
                             [] ->
                                 image
 
-                            ( ( col, row ), value ) :: tail ->
-                                colorNeighbors (Matrix.set (loc row col) (min 1 (value + 0.4)) image) tail
+                            location :: tail ->
+                                colorNeighbors (Matrix.update location (\v -> min 1 (v + 0.4)) image) tail
 
                     newImage =
                         colorNeighbors model.image neighbors
