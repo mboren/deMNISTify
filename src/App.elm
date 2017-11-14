@@ -149,23 +149,42 @@ view model =
             ]
             [ drawImage model.drawing model.image
             , Svg.rect
-                [ Svg.Attributes.width (toString vbWidth)
+                [ Svg.Attributes.width (toString (toFloat vbWidth / 2))
                 , Svg.Attributes.height (toString controlHeight)
                 , Svg.Attributes.x (toString 0)
                 , Svg.Attributes.y (toString (vbHeight - controlHeight))
                 , Svg.Attributes.fill "gray"
+                ]
+                []
+            , Svg.rect
+                [ Svg.Attributes.width (toString (toFloat vbWidth / 2))
+                , Svg.Attributes.height (toString controlHeight)
+                , Svg.Attributes.x (toString (toFloat vbWidth / 2))
+                , Svg.Attributes.y (toString (vbHeight - controlHeight))
+                , Svg.Attributes.fill "darkgray"
                 , Svg.Events.onClick Clear
                 ]
                 []
             , Svg.text_
-                [ Svg.Attributes.x (toString (vbWidth - 10))
-                , Svg.Attributes.y (toString (vbHeight - 2))
+                [ Svg.Attributes.x (toString (toFloat vbWidth / 5))
+                , Svg.Attributes.y (toString (vbHeight - 4))
                 , Svg.Attributes.fill "white"
+                , Svg.Attributes.fontSize (toString (controlHeight + 4))
+                , Svg.Attributes.fontFamily "Verdana"
                 ]
                 [ Svg.text
                     (Maybe.map toString model.predicted
                         |> Maybe.withDefault "?"
                     )
+                ]
+            , Svg.text_
+                [ Svg.Attributes.x (toString (toFloat vbWidth / 2))
+                , Svg.Attributes.y (toString (vbHeight - 4))
+                , Svg.Attributes.fontSize (toString (controlHeight + 4))
+                , Svg.Attributes.fill "white"
+                , Svg.Events.onClick Clear
+                ]
+                [ Svg.text "Clear"
                 ]
             ]
         ]
