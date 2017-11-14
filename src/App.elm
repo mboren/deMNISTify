@@ -1,4 +1,4 @@
-module Main exposing (Model, Msg, init, subscriptions, update, view)
+port module Main exposing (..)
 
 import Array exposing (Array)
 import Html exposing (Html, div, text)
@@ -16,6 +16,16 @@ pxSize =
 
 controlHeight =
     15
+
+
+{-| Send a flattened image to JS classifier
+-}
+port sendImage : List Float -> Cmd msg
+
+
+{-| Get digit predicted by JS classifier
+-}
+port getPrediction : (Int -> msg) -> Sub msg
 
 
 main : Program Never Model Msg
@@ -49,6 +59,7 @@ type Msg
     = MouseOverCell Int Int
     | StartDrawing
     | StopDrawing
+    | NewPrediction Int
     | Clear
 
 
@@ -83,19 +94,18 @@ update msg model =
                     newImage =
                         colorNeighbors model.image neighbors
                             |> Matrix.set (loc row col) 1.0
-
-                    newPredicted =
-                        recognizeDigit model.image
                 in
                 ( { model
                     | image = newImage
-                    , predicted = newPredicted
                     , previousDrawn = Just ( col, row )
                   }
-                , Cmd.none
+                , sendImage (Matrix.flatten newImage)
                 )
             else
                 ( model, Cmd.none )
+
+        NewPrediction i ->
+            ( { model | predicted = Just i }, Cmd.none )
 
         StartDrawing ->
             ( { model | drawing = True }, Cmd.none )
@@ -112,56 +122,6 @@ update msg model =
                     Matrix.matrix rows cols (\_ -> 0)
             in
             ( { model | image = newImage }, Cmd.none )
-
-{--
-recognizeDigit2 : Net Float -> Matrix Float -> Maybe Int
-recognizeDigit2 net image =
-    let
-        flattened =
-            image
-                |> MatrixMath.getRows
-                |> List.foldl Array.append Array.empty
-
-        output =
-            NeuralNet.predict net flattened
-
-        digit =
-            case output of
-                Nothing ->
-                    Nothing
-
-                Just activations ->
-                    let
-                        greatest =
-                            activations |> Array.toList |> List.maximum |> Maybe.withDefault 0
-                    in
-                    activations
-                        |> Array.toIndexedList
-                        |> List.filter (\( i, val ) -> val == greatest)
-                        |> List.head
-                        |> Maybe.map Tuple.first
-    in
-    digit
---}
-
-recognizeDigit : Matrix Float -> Maybe Int
-recognizeDigit image =
-    let
-        totalWeight =
-            image
-                |> Array.map (Array.foldl (+) 0)
-                |> Array.foldl (+) 0
-
-        digitsSortedByWeight =
-            Array.fromList [ 1, 7, 4, 3, 9, 5, 2, 6, 8, 0 ]
-
-        index x =
-            0.0004 * x * x - 0.0387 * x + 0.713
-
-        digitIndex =
-            totalWeight |> index |> round
-    in
-    Array.get digitIndex digitsSortedByWeight
 
 
 view : Model -> Html Msg
@@ -262,4 +222,5 @@ subscriptions model =
     Sub.batch
         [ Mouse.downs (\_ -> StartDrawing)
         , Mouse.ups (\_ -> StopDrawing)
+        , getPrediction NewPrediction
         ]
