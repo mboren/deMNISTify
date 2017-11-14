@@ -42,7 +42,7 @@ If width of a is not equal to length of b, return Nothing.
 -}
 multiply : Matrix number -> Array number -> Maybe (Array number)
 multiply a b =
-    if Matrix.width a == Array.length b then
+    if Matrix.colCount a == Array.length b then
         let
             dotProducts =
                 List.map (dot b) (getRows a)
@@ -66,8 +66,4 @@ This is a handy thing for mapping over.
 -}
 getRows : Matrix a -> List (Array a)
 getRows matrix =
-    matrix
-        |> Matrix.height
-        |> (+) -1
-        |> List.range 0
-        |> List.filterMap (\i -> Matrix.getRow i matrix)
+    Array.toList matrix

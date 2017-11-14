@@ -3,7 +3,7 @@ module Main exposing (Model, Msg, init, subscriptions, update, view)
 import Array exposing (Array)
 import Html exposing (Html, div, text)
 import Html.Attributes
-import Matrix exposing (Matrix)
+import Matrix exposing (Matrix, loc)
 import Mouse
 import Svg exposing (Svg)
 import Svg.Attributes
@@ -40,7 +40,7 @@ init : ( Model, Cmd Msg )
 init =
     let
         image =
-            Matrix.repeat 28 28 0
+            Matrix.square 28 (\_ -> 0)
     in
     ( Model image False Nothing Nothing, Cmd.none )
 
@@ -59,7 +59,7 @@ update msg model =
             if model.drawing && Just ( col, row ) /= model.previousDrawn then
                 let
                     neighbors =
-                        Matrix.Extra.indexedNeighbours col row model.image
+                        []
 
                     -- Add a bit to each neighbor, which results in lighter edges
                     -- around each line. This more closely resembles the original
@@ -71,11 +71,11 @@ update msg model =
                                 image
 
                             ( ( col, row ), value ) :: tail ->
-                                colorNeighbors (Matrix.set col row (min 1 (value + 0.4)) image) tail
+                                colorNeighbors (Matrix.set (loc row col) (min 1 (value + 0.4)) image) tail
 
                     newImage =
                         colorNeighbors model.image neighbors
-                            |> Matrix.set col row 1.0
+                            |> Matrix.set (loc row col) 1.0
 
                     newPredicted =
                         recognizeDigit model.image
@@ -98,23 +98,52 @@ update msg model =
 
         Clear ->
             let
-                ( cols, rows ) =
-                    model.image.size
+                ( rows, cols ) =
+                    ( Matrix.rowCount model.image, Matrix.colCount model.image )
 
                 newImage =
-                    Matrix.repeat cols rows 0
+                    Matrix.matrix rows cols (\_ -> 0)
             in
             ( { model | image = newImage }, Cmd.none )
 
+{--
+recognizeDigit2 : Net Float -> Matrix Float -> Maybe Int
+recognizeDigit2 net image =
+    let
+        flattened =
+            image
+                |> MatrixMath.getRows
+                |> List.foldl Array.append Array.empty
+
+        output =
+            NeuralNet.predict net flattened
+
+        digit =
+            case output of
+                Nothing ->
+                    Nothing
+
+                Just activations ->
+                    let
+                        greatest =
+                            activations |> Array.toList |> List.maximum |> Maybe.withDefault 0
+                    in
+                    activations
+                        |> Array.toIndexedList
+                        |> List.filter (\( i, val ) -> val == greatest)
+                        |> List.head
+                        |> Maybe.map Tuple.first
+    in
+    digit
+--}
 
 recognizeDigit : Matrix Float -> Maybe Int
 recognizeDigit image =
     let
         totalWeight =
-            Matrix.toIndexedArray image
-                |> Array.toList
-                |> List.map Tuple.second
-                |> List.sum
+            image
+                |> Array.map (Array.foldl (+) 0)
+                |> Array.foldl (+) 0
 
         digitsSortedByWeight =
             Array.fromList [ 1, 7, 4, 3, 9, 5, 2, 6, 8, 0 ]
@@ -132,10 +161,10 @@ view : Model -> Html Msg
 view model =
     let
         vbWidth =
-            pxSize * Matrix.width model.image
+            pxSize * Matrix.colCount model.image
 
         vbHeight =
-            controlHeight + pxSize * Matrix.height model.image
+            controlHeight + pxSize * Matrix.rowCount model.image
     in
     div
         []
@@ -152,9 +181,12 @@ view model =
                 ]
             ]
             [ Svg.g []
-                (Matrix.toIndexedArray model.image
-                    |> Array.toList
-                    |> List.map (\( ( col, row ), val ) -> drawCell col row val)
+                (model.image
+                    |> Array.map Array.toIndexedList
+                    |> Array.toIndexedList
+                    |> List.map (\( r, list ) -> List.map (\( c, v ) -> ( r, c, v )) list)
+                    |> List.concat
+                    |> List.map (\( row, col, val ) -> drawCell col row val)
                 )
             , Svg.rect
                 [ Svg.Attributes.width (toString vbWidth)

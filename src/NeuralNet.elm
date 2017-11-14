@@ -1,4 +1,4 @@
-module NeuralNet exposing (..)
+module NeuralNet exposing (ActivationFunc(..), Net, calculateActivation, initialize, predict, weightMatrixSizeHelper)
 
 {-| This module is designed to make it simple to take the weights and biases
 from a network that has already been trained, and use them to make predictions.
@@ -49,7 +49,7 @@ initialize layers initialValue activation =
             let
                 weights =
                     weightMatrixSizeHelper layers []
-                        |> List.map (\( c, r ) -> Matrix.repeat c r initialValue)
+                        |> List.map (\( c, r ) -> Matrix.matrix r c (\_ -> initialValue))
 
                 biases =
                     List.map (\i -> Array.repeat i initialValue) tail

@@ -52,17 +52,14 @@ matrixMathTests =
             [ test "mismatched sizes should return Nothing" <|
                 \_ ->
                     let
-                        width =
-                            2
-
-                        height =
+                        size =
                             2
 
                         default =
                             1
 
                         a =
-                            Matrix.repeat width height default
+                            Matrix.square size (\_ -> default)
 
                         b =
                             Array.fromList [ 1, 2, 3 ]
@@ -71,17 +68,14 @@ matrixMathTests =
             , test "matched sizes should return Just <something>" <|
                 \_ ->
                     let
-                        width =
-                            2
-
-                        height =
+                        size =
                             2
 
                         default =
                             1
 
                         a =
-                            Matrix.repeat width height default
+                            Matrix.square size (\_ -> default)
 
                         b =
                             Array.fromList [ 1, 2 ]
@@ -93,7 +87,7 @@ matrixMathTests =
             , test "3x3 * 3x1" <|
                 \_ ->
                     let
-                        maybeA =
+                        a =
                             Matrix.fromList
                                 [ [ 1, 2, 3 ]
                                 , [ 4, 5, 6 ]
@@ -106,27 +100,19 @@ matrixMathTests =
                         expected =
                             Array.fromList
                                 [ 14, 32, 50 ]
-
-                        a =
-                            case maybeA of
-                                Just mat ->
-                                    mat
-
-                                _ ->
-                                    Debug.crash "invalid a in test" Matrix.empty
                     in
                     Expect.equal (MatrixMath.multiply a b) (Just expected)
             ]
         , describe "test getRows"
             [ test "empty matrix should return empty list" <|
                 \_ ->
-                    Expect.equal (MatrixMath.getRows Matrix.empty) []
+                    Expect.equal (MatrixMath.getRows (Matrix.fromList [])) []
             , test "single row" <|
                 \_ ->
-                    Expect.equal (MatrixMath.getRows (Matrix.repeat 3 1 1)) [ Array.fromList [ 1, 1, 1 ] ]
+                    Expect.equal (MatrixMath.getRows (Matrix.fromList [ [ 1, 1, 1 ] ])) [ Array.fromList [ 1, 1, 1 ] ]
             , test "multiple rows" <|
                 \_ ->
-                    Expect.equal (MatrixMath.getRows (Matrix.repeat 3 2 1)) [ Array.fromList [ 1, 1, 1 ], Array.fromList [ 1, 1, 1 ] ]
+                    Expect.equal (MatrixMath.getRows (Matrix.fromList [ [ 1, 1, 1 ], [ 1, 1, 1 ] ])) [ Array.fromList [ 1, 1, 1 ], Array.fromList [ 1, 1, 1 ] ]
             ]
         ]
 
@@ -145,7 +131,7 @@ neuralNetTests =
 
                         weights =
                             weightMatrixSizes
-                                |> List.map (\( c, r ) -> Matrix.repeat c r 0)
+                                |> List.map (\( c, r ) -> Matrix.matrix r c (\_ -> 0))
                     in
                     Expect.equal (NeuralNet.initialize [ 2, 3, 2 ] 0 Identity) { biases = [ Array.repeat 3 0, Array.repeat 2 0 ], weights = weights, activation = Identity }
             ]
@@ -165,7 +151,7 @@ neuralNetTests =
                             { biases = [ Array.repeat 3 1, Array.repeat 2 1 ]
                             , weights =
                                 [ ( 2, 3 ), ( 3, 2 ) ]
-                                    |> List.map (\( c, r ) -> Matrix.repeat c r 1)
+                                    |> List.map (\( c, r ) -> Matrix.matrix r c (\_ -> 1))
                             , activation = Identity
                             }
                     in
@@ -177,7 +163,7 @@ neuralNetTests =
                             { biases = [ Array.repeat 3 1, Array.repeat 2 1 ]
                             , weights =
                                 [ ( 2, 3 ), ( 3, 2 ) ]
-                                    |> List.map (\( c, r ) -> Matrix.repeat c r 1)
+                                    |> List.map (\( c, r ) -> Matrix.matrix r c (\_ -> 1))
                             , activation = Identity
                             }
                     in
@@ -189,7 +175,7 @@ neuralNetTests =
                             { biases = [ Array.repeat 2 1, Array.repeat 2 1 ]
                             , weights =
                                 [ ( 2, 3 ), ( 3, 2 ) ]
-                                    |> List.map (\( c, r ) -> Matrix.repeat c r 1)
+                                    |> List.map (\( c, r ) -> Matrix.matrix r c (\_ -> 1))
                             , activation = Identity
                             }
                     in
