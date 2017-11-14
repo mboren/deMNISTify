@@ -186,7 +186,7 @@ view model =
                     |> Array.toIndexedList
                     |> List.map (\( r, list ) -> List.map (\( c, v ) -> ( r, c, v )) list)
                     |> List.concat
-                    |> List.map (\( row, col, val ) -> drawCell col row val)
+                    |> List.map (\( row, col, val ) -> drawCell row col val)
                 )
             , Svg.rect
                 [ Svg.Attributes.width (toString vbWidth)
@@ -212,7 +212,7 @@ view model =
 
 
 drawCell : Int -> Int -> Float -> Svg Msg
-drawCell col row value =
+drawCell row col value =
     let
         x =
             col * pxSize
