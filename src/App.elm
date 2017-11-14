@@ -180,14 +180,7 @@ view model =
                 , ( "max-height", "100%" )
                 ]
             ]
-            [ Svg.g []
-                (model.image
-                    |> Array.map Array.toIndexedList
-                    |> Array.toIndexedList
-                    |> List.map (\( r, list ) -> List.map (\( c, v ) -> ( r, c, v )) list)
-                    |> List.concat
-                    |> List.map (\( row, col, val ) -> drawCell model.drawing row col val)
-                )
+            [ drawImage model.drawing model.image
             , Svg.rect
                 [ Svg.Attributes.width (toString vbWidth)
                 , Svg.Attributes.height (toString controlHeight)
@@ -240,6 +233,21 @@ drawCell setMouseEvent row col value =
                )
         )
         []
+
+drawImage : Bool -> Matrix Float -> Svg Msg
+drawImage setMouseEvent image =
+    image
+        |> Array.indexedMap (drawImageRow setMouseEvent)
+        |> Array.toList
+        |> Svg.g []
+
+
+drawImageRow : Bool -> Int -> Array Float -> Svg Msg
+drawImageRow setMouseEvent rowIndex row =
+    row
+        |> Array.indexedMap (drawCell setMouseEvent rowIndex)
+        |> Array.toList
+        |> Svg.g []
 
 
 subscriptions : Model -> Sub Msg
