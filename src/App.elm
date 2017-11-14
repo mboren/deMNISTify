@@ -15,10 +15,6 @@ pxSize =
     10
 
 
-controlHeight =
-    15
-
-
 {-| Send a flattened image to JS classifier
 -}
 port sendImage : List Float -> Cmd msg
@@ -132,7 +128,10 @@ view model =
             pxSize * Matrix.colCount model.image
 
         vbHeight =
-            controlHeight + pxSize * Matrix.rowCount model.image
+            1.2 * pxSize * toFloat (Matrix.rowCount model.image)
+
+        controlHeight =
+            0.2 * pxSize * toFloat (Matrix.rowCount model.image)
     in
     div
         []
