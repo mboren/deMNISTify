@@ -86,7 +86,7 @@ update msg model =
                                 image
 
                             location :: tail ->
-                                colorNeighbors (Matrix.update location (\v -> min 1 (v + 0.4)) image) tail
+                                colorNeighbors (Matrix.update location (\v -> min 1 (v + 0.5)) image) tail
 
                     newImage =
                         colorNeighbors model.image neighbors
