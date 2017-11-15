@@ -9,6 +9,7 @@ import Mouse
 import Svg exposing (Svg)
 import Svg.Attributes
 import Svg.Events exposing (onMouseMove)
+import WebSocket
 
 
 pxSize =
@@ -35,11 +36,17 @@ main =
         }
 
 
+type DigitRecognizer
+    = Local
+    | Remote String
+
+
 type alias Model =
     { image : Matrix Float
     , drawing : Bool
     , previousDrawn : Maybe ( Int, Int )
     , predicted : Maybe Int
+    , digitRecognizer : DigitRecognizer
     }
 
 
@@ -49,7 +56,14 @@ init =
         image =
             Matrix.square 28 (\_ -> 0)
     in
-    ( Model image False Nothing Nothing, Cmd.none )
+    ( { image = image
+      , drawing = False
+      , previousDrawn = Nothing
+      , predicted = Nothing
+      , digitRecognizer = Remote "ws://localhost:8765"
+      }
+    , Cmd.none
+    )
 
 
 type Msg
@@ -57,6 +71,7 @@ type Msg
     | StartDrawing
     | StopDrawing
     | NewPrediction Int
+    | NewSocketMessage String
     | Clear
 
 
@@ -96,7 +111,7 @@ update msg model =
                     | image = newImage
                     , previousDrawn = Just ( col, row )
                   }
-                , sendImage (Matrix.flatten (MatrixMath.center newImage))
+                , sendImageCmd newImage model.digitRecognizer
                 )
             else
                 ( model, Cmd.none )
@@ -119,6 +134,29 @@ update msg model =
                     Matrix.matrix rows cols (\_ -> 0)
             in
             ( { model | image = newImage }, Cmd.none )
+
+        NewSocketMessage message ->
+            let
+                newPrediction =
+                    Result.toMaybe (String.toInt message)
+            in
+            ( { model | predicted = newPrediction }, Cmd.none )
+
+
+sendImageCmd : Matrix Float -> DigitRecognizer -> Cmd msg
+sendImageCmd image digitRecognizer =
+    case digitRecognizer of
+        Local ->
+            image
+                |> MatrixMath.center
+                |> Matrix.flatten
+                |> sendImage
+
+        Remote path ->
+            image
+                |> Matrix.toList
+                |> toString
+                |> WebSocket.send "ws://localhost:8765"
 
 
 view : Model -> Html Msg
@@ -239,8 +277,18 @@ drawImageRow setMouseEvent rowIndex row =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ Mouse.downs (\_ -> StartDrawing)
-        , Mouse.ups (\_ -> StopDrawing)
-        , getPrediction NewPrediction
-        ]
+    let
+        mouseSubs =
+            [ Mouse.downs (\_ -> StartDrawing)
+            , Mouse.ups (\_ -> StopDrawing)
+            ]
+
+        predictionSub =
+            case model.digitRecognizer of
+                Local ->
+                    getPrediction NewPrediction
+
+                Remote path ->
+                    WebSocket.listen path NewSocketMessage
+    in
+    Sub.batch (predictionSub :: mouseSubs)
