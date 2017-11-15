@@ -200,7 +200,7 @@ drawCell setMouseEvent row col value =
             row * pxSize
 
         intensity =
-            toString (clamp 0 255 (value * 255))
+            toString (clamp 0 255 (floor (value * 255)))
 
         fill =
             "rgb(" ++ intensity ++ ", " ++ intensity ++ ", " ++ intensity ++ ")"
