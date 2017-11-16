@@ -156,7 +156,7 @@ sendImageCmd image digitRecognizer =
             image
                 |> Matrix.toList
                 |> toString
-                |> WebSocket.send "ws://localhost:8765"
+                |> WebSocket.send path
 
 
 view : Model -> Html Msg
