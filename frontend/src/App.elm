@@ -274,6 +274,8 @@ drawImageRow setMouseEvent rowIndex row =
     row
         |> Array.indexedMap (drawCell setMouseEvent rowIndex)
         |> Array.toList
+        -- I put each row in their own SVG group purely to make it easier
+        -- to find things when inspecting the DOM tree with Chrome DevTools
         |> Svg.g []
 
 
