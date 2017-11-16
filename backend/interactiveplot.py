@@ -1,10 +1,18 @@
-"""Encapsulates interactive plots used for playing with MNIST
+"""Interactive plots used for playing with models trained on image data
 
-This enables several forms of interactivity:
-1. You can draw on the plot with your mouse.
-2. Pressing any key will erase the plot.
-3. The plot title will be automatically updated with the currently
-   recognized digit as you draw.
+InteractiveMnistPlot enables several forms of interactivity:
+- You can draw on the plot with your mouse.
+- Pressing any key will erase the plot.
+- The plot title will be automatically updated with the output of your
+   recognition function as you draw.
+
+  This was written with MNIST and digit recognition in mind, but it should be
+fairly generic. Any scenario where you can take monochrome images as input
+and return output that looks reasonable when passed through str() should
+work out of the box.
+  To make it more generic, the drawing code would need to be more configurable,
+and one might want to replace ax.set_title with a function that takes the plot
+and the output of recognition_func as params and modifies the plot.
 """
 import numpy as np
 
