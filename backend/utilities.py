@@ -4,7 +4,7 @@ import numpy as np
 
 def recognize_digit(model, image):
     """Preprocess image, pass to model, and return predicted digit"""
-    input = np.array([np.reshape(center(image), (784,))])
+    input = np.array([np.reshape(center(image), (28,28,1))])
     result = model.predict(input, batch_size=1)
     digit = np.argmax(result[0])
     return digit

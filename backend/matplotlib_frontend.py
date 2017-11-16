@@ -26,9 +26,9 @@ data = np.zeros((28,28))
 plot = ax.imshow(np.random.rand(28,28))
 plot.set_data(data)
 
-ann = load_model('model_keras.h5')
+model = load_model('mnist_model.h5')
 
-interactivePlot = ip.InteractiveMnistPlot(ax, plot, data, ann)
+interactivePlot = ip.InteractiveMnistPlot(ax, plot, data, model)
 
 # block=True is necessary for interactivity
 plt.show(block=True)
