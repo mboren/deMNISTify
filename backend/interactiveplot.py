@@ -7,17 +7,15 @@ This enables several forms of interactivity:
    recognized digit as you draw.
 """
 import numpy as np
-from utilities import recognize_digit
-
 
 class InteractiveMnistPlot:
-    def __init__(self, ax, plot, data, digit_model):
+    def __init__(self, ax, plot, data, recognition_func):
         self.drawing = False
         self.ax = ax
         self.plot = plot
         self.data = data
-        self.digit_model = digit_model
         self.ax.set_title('?')
+        self.recognition_func = recognition_func
 
         # These properties are never used directly, they're only stored to prevent them
         # from getting garbage collected
@@ -64,8 +62,8 @@ class InteractiveMnistPlot:
                             self.data[yn, xn] = min(1, self.data[yn, xn] + 0.5)
 
                 # Set plot title to prediction
-                recognized_digit = recognize_digit(self.digit_model, self.data)
-                self.ax.set_title(str(recognized_digit))
+                recognized = self.recognition_func(self.data)
+                self.ax.set_title(str(recognized))
 
                 self.plot.set_data(self.data)
                 self.plot.figure.canvas.draw()

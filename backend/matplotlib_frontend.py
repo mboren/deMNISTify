@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from keras.models import load_model
 import interactiveplot as ip
+import utilities
 
 # plt.ion is required for this kind of interactivity
 plt.ion()
@@ -28,7 +29,11 @@ plot.set_data(data)
 
 model = load_model('mnist_model.h5')
 
-interactivePlot = ip.InteractiveMnistPlot(ax, plot, data, model)
+
+def recognition_func(image):
+    return utilities.recognize_digit(model, image)
+
+interactivePlot = ip.InteractiveMnistPlot(ax, plot, data, recognition_func)
 
 # block=True is necessary for interactivity
 plt.show(block=True)
