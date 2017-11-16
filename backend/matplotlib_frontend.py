@@ -5,36 +5,46 @@ image in a matplotlib plot. You can draw on the plot with your mouse,
 and erase it by pressing any key. As you draw, the title of the plot
 will be updated with the digit recognized by the model.
 """
+import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 from keras.models import load_model
 import interactiveplot as ip
 import utilities
 
-# plt.ion is required for this kind of interactivity
-plt.ion()
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--modelfile', default='mnist_model.h5', type=str, help='Path to trained model stored in a file that keras.models.load_model will understand')
 
-fig = plt.figure()
-ax = fig.add_subplot(111)
+    args = parser.parse_args()
 
-data = np.zeros((28,28))
-
-
-# If I replace np.random.rand in ax.imshow with np.zeros or data, interactivity
-# breaks. Initializing with random data and then immediately changing to zeros
-# works fine though. I have *no idea* why this happens, and I'm definitely going
-# come back to this and tinker with it in the future.
-plot = ax.imshow(np.random.rand(28,28))
-plot.set_data(data)
-
-model = load_model('mnist_model.h5')
+    model = load_model(args.modelfile)
 
 
-def recognition_func(image):
-    return utilities.recognize_digit(model, image)
+    # plt.ion is required for this kind of interactivity
+    plt.ion()
 
-interactivePlot = ip.InteractiveMnistPlot(ax, plot, data, recognition_func)
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
 
-# block=True is necessary for interactivity
-plt.show(block=True)
+    data = np.zeros((28,28))
+
+
+    # If I replace np.random.rand in ax.imshow with np.zeros or data, interactivity
+    # breaks. Initializing with random data and then immediately changing to zeros
+    # works fine though. I have *no idea* why this happens, and I'm definitely going
+    # come back to this and tinker with it in the future.
+    plot = ax.imshow(np.random.rand(28,28))
+    plot.set_data(data)
+
+    model = load_model(args.modelfile)
+
+
+    def recognition_func(image):
+        return utilities.recognize_digit(model, image)
+
+    interactivePlot = ip.InteractiveMnistPlot(ax, plot, data, recognition_func)
+
+    # block=True is necessary for interactivity
+    plt.show(block=True)
 
