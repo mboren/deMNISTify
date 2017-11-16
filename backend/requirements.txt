@@ -1,4 +1,5 @@
 matplotlib
 scikit-image
 numpy
+websockets
 keras
