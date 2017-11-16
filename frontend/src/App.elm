@@ -78,13 +78,15 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        MouseOverCell col row ->
-            if model.drawing && Just ( col, row ) /= model.previousDrawn then
+        MouseOverCell row col ->
+            if model.drawing && Just ( row, col ) /= model.previousDrawn then
                 let
                     delta =
                         List.range -1 1
 
                     neighbors =
+                        -- this functional soup just makes a list of locations of
+                        -- cells adjacent to the current cell
                         delta
                             |> List.concatMap (\i -> List.map ((,) i) delta)
                             |> List.filter ((/=) ( 0, 0 ))
@@ -109,7 +111,7 @@ update msg model =
                 in
                 ( { model
                     | image = newImage
-                    , previousDrawn = Just ( col, row )
+                    , previousDrawn = Just ( row, col )
                   }
                 , sendImageCmd newImage model.digitRecognizer
                 )
@@ -251,7 +253,7 @@ drawCell setMouseEvent row col value =
          , Svg.Attributes.fill fill
          ]
             ++ (if setMouseEvent then
-                    [ onMouseMove (MouseOverCell col row) ]
+                    [ onMouseMove (MouseOverCell row col) ]
                 else
                     []
                )
