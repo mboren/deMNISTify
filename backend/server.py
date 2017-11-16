@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--modelfile', default='mnist_model.h5', type=str, help='Path to trained model stored in a file that keras.models.load_model will understand')
     parser.add_argument('--address', default='localhost', type=str, help='URL to serve from')
-    parser.add_argument('--port', default='8765', type=int, help='Port to serve from')
+    parser.add_argument('--port', default=8765, type=int, help='Port to serve from')
 
     args = parser.parse_args()
 
