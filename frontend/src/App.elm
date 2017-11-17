@@ -60,7 +60,7 @@ init =
       , drawing = False
       , previousDrawn = Nothing
       , predicted = Nothing
-      , digitRecognizer = Remote "ws://52.35.77.95:8765"
+      , digitRecognizer = Remote "localhost:8765"
       }
     , Cmd.none
     )
