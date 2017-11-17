@@ -36,29 +36,30 @@ $ python matplotlib_frontend.py
 Draw on the plot that comes up by dragging with your mouse, and press any key to erase.
 
 # Web app instructions
+First you'll have to run a server:
 ```
-$ cd frontend
+cd backend
+python train_model.py
+python server.py --address localhost --port 8765
+```
+
+Then, build and run the Elm app:
+```
+$ cd ../frontend
 $ elm-package install
 $ elm-make src/App.elm --output=app.html
 ```
-Open frontend/app.html in a web browser. If you draw on page that comes up,
+
+Open frontend/app.html in a web browser. If you draw on the page that comes up,
 you should see the question mark in the bottom left of the page turn into a
-number. If it doesn't, it means that my server isn't running, which shouldn't
-be surprising. You'll just have to run your own server:
-```
-cd ../backend
-python train_model.py
-python server.py
-```
+number. If it doesn't, something went wrong on the python side.
 
-The server address is hardcoded in the Elm code due to \<insert weak excuses\>.
-
-Find a line that looks something like this in `frontend/src/App.elm`:
-```
-      , digitRecognizer = Remote "ws://52.35.77.95:8765"
-```
-Change the string to "localhost:8765", run elm-make again, and refresh app.html.
+The server address is hardcoded in `frontend/src/App.elm` code due to \<insert weak excuses\>, so if you want to point this at a remote server you'll need to update
+that manually.
 
 # Browser compatibility
-It should work in any modern browser, but I've only tried this in Google Chrome and Microsoft Edge.
+It should work in any modern desktop browser, but I've only tried this in Google Chrome and Microsoft Edge.
 It works fine in both, but Edge makes adjacent polygons in SVGs look prettier.
+
+The Elm app does not respond to touch events, so, even though it'll run in mobile
+browsers, you won't be able to interact with it at all.
