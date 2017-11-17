@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "use neural net trained on MNIST to recognize digits drawn by user",
-    "repository": "https://github.com/mboren/elm-digit-recognizer.git",
+    "repository": "https://github.com/mboren/demnistify.git",
     "license": "CC0",
     "source-directories": [
         "src"
