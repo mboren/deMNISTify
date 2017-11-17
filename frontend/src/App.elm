@@ -1,10 +1,9 @@
-port module Main exposing (..)
+module Main exposing (..)
 
 import Array exposing (Array)
 import Html exposing (Html, div, text)
 import Html.Attributes
 import Matrix exposing (Matrix, loc)
-import MatrixMath
 import Mouse
 import Svg exposing (Svg)
 import Svg.Attributes
@@ -14,16 +13,6 @@ import WebSocket
 
 pxSize =
     10
-
-
-{-| Send a flattened image to JS classifier
--}
-port sendImage : List Float -> Cmd msg
-
-
-{-| Get digit predicted by JS classifier
--}
-port getPrediction : (Int -> msg) -> Sub msg
 
 
 main : Program Never Model Msg
@@ -36,17 +25,12 @@ main =
         }
 
 
-type DigitRecognizer
-    = Local
-    | Remote String
-
-
 type alias Model =
     { image : Matrix Float
     , drawing : Bool
     , previousDrawn : Maybe ( Int, Int )
     , predicted : Maybe Int
-    , digitRecognizer : DigitRecognizer
+    , serverAddress : String
     }
 
 
@@ -60,7 +44,7 @@ init =
       , drawing = False
       , previousDrawn = Nothing
       , predicted = Nothing
-      , digitRecognizer = Remote "localhost:8765"
+      , serverAddress = "localhost:8765"
       }
     , Cmd.none
     )
@@ -70,7 +54,6 @@ type Msg
     = MouseOverCell Int Int
     | StartDrawing
     | StopDrawing
-    | NewPrediction Int
     | NewSocketMessage String
     | Clear
 
@@ -113,13 +96,10 @@ update msg model =
                     | image = newImage
                     , previousDrawn = Just ( row, col )
                   }
-                , sendImageCmd newImage model.digitRecognizer
+                , newImage |> Matrix.toList |> toString |> WebSocket.send model.serverAddress
                 )
             else
                 ( model, Cmd.none )
-
-        NewPrediction i ->
-            ( { model | predicted = Just i }, Cmd.none )
 
         StartDrawing ->
             ( { model | drawing = True }, Cmd.none )
@@ -143,22 +123,6 @@ update msg model =
                     Result.toMaybe (String.toInt message)
             in
             ( { model | predicted = newPrediction }, Cmd.none )
-
-
-sendImageCmd : Matrix Float -> DigitRecognizer -> Cmd msg
-sendImageCmd image digitRecognizer =
-    case digitRecognizer of
-        Local ->
-            image
-                |> MatrixMath.center
-                |> Matrix.flatten
-                |> sendImage
-
-        Remote path ->
-            image
-                |> Matrix.toList
-                |> toString
-                |> WebSocket.send path
 
 
 view : Model -> Html Msg
@@ -281,18 +245,8 @@ drawImageRow setMouseEvent rowIndex row =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    let
-        mouseSubs =
-            [ Mouse.downs (\_ -> StartDrawing)
-            , Mouse.ups (\_ -> StopDrawing)
-            ]
-
-        predictionSub =
-            case model.digitRecognizer of
-                Local ->
-                    getPrediction NewPrediction
-
-                Remote path ->
-                    WebSocket.listen path NewSocketMessage
-    in
-    Sub.batch (predictionSub :: mouseSubs)
+    Sub.batch
+        [ Mouse.downs (\_ -> StartDrawing)
+        , Mouse.ups (\_ -> StopDrawing)
+        , WebSocket.listen model.serverAddress NewSocketMessage
+        ]
