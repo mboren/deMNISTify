@@ -5,7 +5,7 @@ updated live as you draw.
 
 [demo](http://s3.us-west-1.amazonaws.com/hi-mom-im-on-the-internet/mnist.html)
 
-\<placeholder for cool gifs\>
+![animation showing Elm app recognizing multiple digits](demo.gif)
 
 Digit recognition is done with a Convolutional Neural Network implemented with Keras and Tensorflow.
 
