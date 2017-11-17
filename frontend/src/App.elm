@@ -91,7 +91,12 @@ update msg model =
                 newImage =
                     Matrix.matrix rows cols (\_ -> 0)
             in
-            ( { model | image = newImage }, Cmd.none )
+            ( { model
+                | image = newImage
+                , predicted = Nothing
+              }
+            , Cmd.none
+            )
 
         NewSocketMessage message ->
             let
