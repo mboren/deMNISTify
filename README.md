@@ -5,8 +5,8 @@ updated live as you draw.
  
 [demo](http://s3.us-west-1.amazonaws.com/hi-mom-im-on-the-internet/mnist.html)
 
-The demo backend is running on a free dyno from Heroku, so it might take a minute or two to wake up when you first open the page.
-
+I'm using ![mboren/model-server](https://github.com/mboren/model-server) running on a free dyno from Heroku for the demo backend, so it might take a minute or two to wake up when you first open the page.
+ 
 ![animation showing Elm app recognizing multiple digits](demo.gif)
 
 Digit recognition is done with a Convolutional Neural Network implemented with Keras and Tensorflow.
