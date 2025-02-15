@@ -2,10 +2,11 @@
 
 Train a classifier on MNIST, then draw numbers and see the output of the classifier
 updated live as you draw.
- 
-[demo](http://s3.us-west-1.amazonaws.com/hi-mom-im-on-the-internet/mnist.html)
 
-I'm using ![mboren/model-server](https://github.com/mboren/model-server) running on a free dyno from Heroku for the demo backend, so it might take a minute or two to wake up when you first open the page.
+
+[demo](http://s3.us-west-1.amazonaws.com/hi-mom-im-on-the-internet/mnist.html) (backend is not being hosted anymore, so there's not much to see here).
+
+I was using ![mboren/model-server](https://github.com/mboren/model-server) running on Heroku for demo backend.
  
 ![animation showing Elm app recognizing multiple digits](demo.gif)
 
